@@ -1,0 +1,28 @@
+{
+  "name": "images-rekognition",
+  "version": "1.0.0-SNAPSHOT",
+  "description": "Extracts information from the image itself via AWS Rekognition",
+  "repository": {
+    "type": "git",
+    "url": "https://https://github.com/PressAssociation/images-asset-ingest-rekognition.git"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --dir ../coverage_map"
+  },
+  "author": "Ian Young",
+  "license": "ISC",
+  "devDependencies": {
+    "aws-sdk-mock": "1.7.0",
+    "chai": "^3.5.0",
+    "istanbul": "0.4.5",
+    "mocha": "3.3.0",
+    "sinon": "2.2.0",
+    "sinon-chai": "2.10.0"
+  },
+  "dependencies": {
+    "@press-association/aws-utils": "0.0.11",
+    "lambda-log": "1.2.1",
+    "aws-sdk": "2.247.1"
+  }
+}
