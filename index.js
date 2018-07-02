@@ -44,7 +44,7 @@ exports.handler = (event, context, callback) => {
       .then(notification => rekog.decorateWithKeywords(notification))
       .then(notification => rekog.decorateWithPeople(notification))
       .then(notification => decoratedItem = notification.metadata)
-      .then(item => sns.publish({message: JSON.stringify(item), targetArn: process.env.PUBLISH_SNS}))
+      //.then(item => sns.publish({message: JSON.stringify(item), targetArn: process.env.PUBLISH_SNS}))
       .then((res) => {
         log.info('metadata decorated successfully', {decoratedItem: decoratedItem});
         return callback(null, decoratedItem);
