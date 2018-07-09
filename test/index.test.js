@@ -63,10 +63,11 @@ describe('lambda', () => {
     });
 
     it('The response JSON should match the expected', (done) => {
-      let expectedResponse = {'keywords', 'people', 'text', 'adultContent'};
+      let expectedResponse = {keywords: [], people: [], text: [], adultContent: []};
       lambda.handler(NOTIFICATION_INPUT_1, null, (err, res) => {
         should.not.exist(err);
-        res.should.equal(expectedResponse);
+        should.exist(res.extendedContent);
+        res.extendedContent.should.deep.equal(expectedResponse);
         done();
       });
     });

@@ -49,8 +49,9 @@ exports.handler = (event, context, callback) => {
       })
       .then(results => {
         let i=0;
+        decoratedItem.extendedContent = {};
         ['keywords','people','text','adultContent'].forEach((key) => {
-          decoratedItem[key] = results[i];
+          decoratedItem.extendedContent[key] = results[i];
           i++;
         });
       })
