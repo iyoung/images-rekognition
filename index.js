@@ -38,12 +38,22 @@ exports.handler = (event, context, callback) => {
   sns.extractSNSNotification(event)
       .then(notification => setLogMetadata(notification))
       .then((notification) => {
+        let promises = [];
         rekog.setImage(notification.asset.bucket, notification.asset.key);
-        return notification;
+        promises.push(rekog.decorateWithKeywords());
+        promises.push(rekog.decorateWithPeople());
+        promises.push(rekog.decorateWithDetectedText());
+        promises.push(rekog.decorateWithModerationWarnings());
+        decoratedItem = notification.metadata;
+        return Promise.all(promises);
       })
-      .then(notification => rekog.decorateWithKeywords(notification))
-      .then(notification => rekog.decorateWithPeople(notification))
-      .then(notification => decoratedItem = notification.metadata)
+      .then(results => {
+        let i=0;
+        ['keywords','people','text','adultContent'].forEach((key) => {
+          decoratedItem[key] = results[i];
+          i++;
+        });
+      })
       //.then(item => sns.publish({message: JSON.stringify(item), targetArn: process.env.PUBLISH_SNS}))
       .then((res) => {
         log.info('metadata decorated successfully', {decoratedItem: decoratedItem});

@@ -10,25 +10,21 @@ const rekog = require('../lib/rekog');
 // Fixtures
 const NOTIFICATION_INPUT_1 = require(`${__dirname}/fixtures/pa-1-sns.input.json`);
 
-let lambda, sandbox, publishStub, rekogKeywordStub, rekogPeopleStub, kwMeta, personMeta;
+let lambda, sandbox, publishStub, rekogKeywordStub, rekogPeopleStub, rekogTextStub, rekogModStub, kwMeta, personMeta;
 
 describe('lambda', () => {
   before(function(done) {
     sandbox = sinon.sandbox.create();
-    publishStub = sandbox.stub(sns, 'publish');
+    //publishStub = sandbox.stub(sns, 'publish');
     rekogKeywordStub = sandbox.stub(rekog, 'decorateWithKeywords');
     rekogPeopleStub = sandbox.stub(rekog, 'decorateWithPeople');
-    kwMeta = JSON.parse(NOTIFICATION_INPUT_1.Records[0].Sns.Message);
-    kwMeta.metadata.detectedKeywords = [
-      "test1",
-      "test2"
-    ];
-    rekogKeywordStub.returns(kwMeta);
-    personMeta = kwMeta;
-    personMeta.metadata.detectedPersonInImage = [
-      "Ian Young"
-    ];
-    rekogPeopleStub.returns(personMeta);
+    rekogTextStub = sandbox.stub(rekog, 'decorateWithDetectedText');
+    rekogModStub = sandbox.stub(rekog, 'decorateWithModerationWarnings');
+    rekogKeywordStub.returns(Promise.resolve([]));
+    rekogPeopleStub.returns(Promise.resolve([]));
+    rekogTextStub.returns(Promise.resolve([]));
+    rekogModStub.returns(Promise.resolve([]));
+
     let rekogSetImage = sandbox.stub(rekog, 'setImage');
     rekogSetImage.returns(null);
 
@@ -55,22 +51,24 @@ describe('lambda', () => {
   });
 
   describe('handler()', () => {
-    it('Should add keywords to the metadata for items recognised', (done) => {
+    it('Each decorator function should be called', (done) => {
      lambda.handler(NOTIFICATION_INPUT_1, null, (err, res) => {
        should.not.exist(err);
-       let expectedMessage = JSON.parse(NOTIFICATION_INPUT_1.Records[0].Sns.Message);
-       rekogKeywordStub.calledWith(expectedMessage).should.equal(true);
+       rekogKeywordStub.calledOnce.should.equal(true);
+       rekogPeopleStub.calledOnce.should.equal(true);
+       rekogTextStub.calledOnce.should.equal(true);
+       rekogModStub.calledOnce.should.equal(true);
        done();
      });
     });
 
-    it('Should add people to the metadata for items recognised', (done) => {
-     lambda.handler(NOTIFICATION_INPUT_1, null, (err, res) => {
-       should.not.exist(err);
-       rekogPeopleStub.calledWith(kwMeta).should.equal(true);
-       res.should.equal(personMeta.metadata);
-       done();
-     });
+    it('The response JSON should match the expected', (done) => {
+      let expectedResponse = {'keywords', 'people', 'text', 'adultContent'};
+      lambda.handler(NOTIFICATION_INPUT_1, null, (err, res) => {
+        should.not.exist(err);
+        res.should.equal(expectedResponse);
+        done();
+      });
     });
 
   });

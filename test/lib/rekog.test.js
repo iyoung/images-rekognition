@@ -6,13 +6,12 @@ const should = require('chai').should();
 const sinon = require('sinon');
 
 const NOTIFICATION_INPUT_1 = require(`${__dirname}/../fixtures/pa-1-sns.input.json`);
-let sandbox, rekog, message;
+let sandbox, rekog;//, message;
 
 describe('rekog', () => {
 
   before(function(done) {
     sandbox = sinon.sandbox.create();
-    message = JSON.parse(NOTIFICATION_INPUT_1.Records[0].Sns.Message);
     sandbox.stub(AWS, 'Rekognition').
       returns({
         detectLabels: (options, callback) => {
@@ -26,6 +25,12 @@ describe('rekog', () => {
         },
         recognizeCelebrities: (options, callback) => {
          return callback(null, {CelebrityFaces: [{name: "Ian Young"}]});
+        },
+        detectText: (options, callback) => {
+          return callback(null, {});
+        },
+        detectModerationLabels: (options, callback) => {
+          return callback(null, {});
         }
       });
     rekog = require('../../lib/rekog');
@@ -45,7 +50,7 @@ describe('rekog', () => {
   describe('decorateWithKeywords()', function () {
 
     it ('Should return error if no image set', (done) => {
-      let notificationPromise = rekog.decorateWithKeywords(message);
+      let notificationPromise = rekog.decorateWithKeywords();
       notificationPromise.then((notification) => {
         should.not.exist(notification, 'Expected failure when no image set');
         done();
@@ -57,9 +62,9 @@ describe('rekog', () => {
 
     it('Should return notification with keywords if image set', (done) => {
       rekog.setImage('testBucket','testKey');
-      rekog.decorateWithKeywords(message).then((notification) => {
-        should.exist(notification.metadata.detectedKeywords);
-        notification.metadata.detectedKeywords.length.should.equal(3);
+      rekog.decorateWithKeywords().then((response) => {
+        should.exist(response);
+        response.length.should.equal(3);
         done();
       }).catch((err) => {
         should.not.exist(err);
@@ -72,9 +77,9 @@ describe('rekog', () => {
   describe('decorateWithPeople()', function() {
 
     it('Should return error if no image set', (done) => {
-      let notificationPromise = rekog.decorateWithPeople(message);
-      notificationPromise.then((notification) => {
-        should.not.exist(notification, 'Expected failure when no image set');
+      let notificationPromise = rekog.decorateWithPeople();
+      notificationPromise.then((response) => {
+        should.not.exist(response, 'Expected failure when no image set');
         done();
       }).catch((err) => {
         should.exist(err);
@@ -84,9 +89,9 @@ describe('rekog', () => {
 
     it('Should return notification with celebrities if image set', (done) => {
       rekog.setImage('testBucket', 'testKey');
-      rekog.decorateWithPeople(message).then((notification) => {
-        should.exist(notification.metadata.detectedPersonInImage);
-        notification.metadata.detectedPersonInImage.length.should.equal(1);
+      rekog.decorateWithPeople().then((response) => {
+        should.exist(response);
+        response.length.should.equal(1);
         done();
       }).catch((err) => {
         should.not.exist(err);
@@ -96,5 +101,56 @@ describe('rekog', () => {
 
   });
 
+  describe('decorateWithDetectedText()', function() {
+
+    it('Should return error if no image set', (done) => {
+      let notificationPromise = rekog.decorateWithDetectedText();
+      notificationPromise.then((response) => {
+        should.not.exist(response, 'Expected failure when no image set');
+        done();
+      }).catch((err) => {
+        should.exist(err);
+        done();
+      });
+    });
+
+    it('Should return notification with found text if image set', (done) => {
+      rekog.setImage('testBucket', 'testKey');
+      rekog.decorateWithDetectedText().then((response) => {
+        should.exist(response);
+        done();
+      }).catch((err) => {
+        should.not.exist(err);
+        done();
+      });
+    });
+
+  });
+
+  describe('decorateWithModerationWarnings()', function() {
+
+    it('Should return error if no image set', (done) => {
+      let notificationPromise = rekog.decorateWithModerationWarnings();
+      notificationPromise.then((response) => {
+        should.not.exist(response, 'Expected failure when no image set');
+        done();
+      }).catch((err) => {
+        should.exist(err);
+        done();
+      });
+    });
+
+    it('Should return notification with any adult content warnings if image set', (done) => {
+      rekog.setImage('testBucket', 'testKey');
+      rekog.decorateWithModerationWarnings().then((response) => {
+        should.exist(response);
+        done();
+      }).catch((err) => {
+        should.not.exist(err);
+        done();
+      });
+    });
+
+  });
 
 });
