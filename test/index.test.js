@@ -10,7 +10,8 @@ const rekog = require('../lib/rekog');
 // Fixtures
 const NOTIFICATION_INPUT_1 = require(`${__dirname}/fixtures/pa-1-sns.input.json`);
 
-let lambda, sandbox, publishStub, rekogKeywordStub, rekogPeopleStub, rekogTextStub, rekogModStub, kwMeta, personMeta;
+let lambda, sandbox, publishStub, rekogKeywordStub, rekogPeopleStub, rekogFacesStub, rekogTextStub, rekogModStub,
+    kwMeta, personMeta;
 
 describe('lambda', () => {
   before(function(done) {
@@ -18,10 +19,12 @@ describe('lambda', () => {
     //publishStub = sandbox.stub(sns, 'publish');
     rekogKeywordStub = sandbox.stub(rekog, 'decorateWithKeywords');
     rekogPeopleStub = sandbox.stub(rekog, 'decorateWithPeople');
+    rekogFacesStub = sandbox.stub(rekog, 'decorateWithFaces');
     rekogTextStub = sandbox.stub(rekog, 'decorateWithDetectedText');
     rekogModStub = sandbox.stub(rekog, 'decorateWithModerationWarnings');
     rekogKeywordStub.returns(Promise.resolve([]));
     rekogPeopleStub.returns(Promise.resolve([]));
+    rekogFacesStub.returns(Promise.resolve([]));
     rekogTextStub.returns(Promise.resolve([]));
     rekogModStub.returns(Promise.resolve([]));
 
@@ -56,6 +59,7 @@ describe('lambda', () => {
        should.not.exist(err);
        rekogKeywordStub.calledOnce.should.equal(true);
        rekogPeopleStub.calledOnce.should.equal(true);
+       rekogFacesStub.calledOnce.should.equal(true);
        rekogTextStub.calledOnce.should.equal(true);
        rekogModStub.calledOnce.should.equal(true);
        done();
@@ -63,7 +67,7 @@ describe('lambda', () => {
     });
 
     it('The response JSON should match the expected', (done) => {
-      let expectedResponse = {keywords: [], people: [], text: [], adultContent: []};
+      let expectedResponse = {keywords: [], people: [], faces: [], text: [], adultContent: []};
       lambda.handler(NOTIFICATION_INPUT_1, null, (err, res) => {
         should.not.exist(err);
         should.exist(res.extendedContent);

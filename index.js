@@ -42,6 +42,7 @@ exports.handler = (event, context, callback) => {
         rekog.setImage(notification.asset.bucket, notification.asset.key);
         promises.push(rekog.decorateWithKeywords());
         promises.push(rekog.decorateWithPeople());
+        promises.push(rekog.decorateWithFaces());
         promises.push(rekog.decorateWithDetectedText());
         promises.push(rekog.decorateWithModerationWarnings());
         decoratedItem = notification.metadata;
@@ -50,7 +51,7 @@ exports.handler = (event, context, callback) => {
       .then(results => {
         let i=0;
         decoratedItem.extendedContent = {};
-        ['keywords','people','text','adultContent'].forEach((key) => {
+        ['keywords','people','faces','text','adultContent'].forEach((key) => {
           decoratedItem.extendedContent[key] = results[i];
           i++;
         });

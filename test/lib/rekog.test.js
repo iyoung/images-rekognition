@@ -26,6 +26,9 @@ describe('rekog', () => {
         recognizeCelebrities: (options, callback) => {
          return callback(null, {CelebrityFaces: [{name: "Ian Young"}]});
         },
+        detectFaces: (options, callback) => {
+          return callback(null, {});
+        },
         detectText: (options, callback) => {
           return callback(null, {});
         },
@@ -92,6 +95,32 @@ describe('rekog', () => {
       rekog.decorateWithPeople().then((response) => {
         should.exist(response);
         response.length.should.equal(1);
+        done();
+      }).catch((err) => {
+        should.not.exist(err);
+        done();
+      });
+    });
+
+  });
+
+  describe('decorateWithFaces()', function() {
+
+    it('Should return error if no image set', (done) => {
+      let notificationPromise = rekog.decorateWithFaces();
+      notificationPromise.then((response) => {
+        should.not.exist(response, 'Expected failure when no image set');
+        done();
+      }).catch((err) => {
+        should.exist(err);
+        done();
+      });
+    });
+
+    it('Should return notification with faces and sentiment if image set', (done) => {
+      rekog.setImage('testBucket', 'testKey');
+      rekog.decorateWithFaces().then((response) => {
+        should.exist(response);
         done();
       }).catch((err) => {
         should.not.exist(err);
