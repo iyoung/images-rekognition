@@ -3,6 +3,7 @@
 const log = require('lambda-log');
 const AWSUtils = require('@press-association/aws-utils');
 const rekog = require('./lib/rekog');
+const semantic = require('./lib/semantic');
 
 const sns = new AWSUtils({region: process.env.AWS_DEFAULT_REGION}).SNS();
 
@@ -45,13 +46,19 @@ exports.handler = (event, context, callback) => {
         promises.push(rekog.decorateWithFaces());
         promises.push(rekog.decorateWithDetectedText());
         promises.push(rekog.decorateWithModerationWarnings());
+        // Temporarily apply semantic analysis only on this condition
+        if (notification.metadata && notification.metadata["Caption-Abstract"]){
+          promises.push(semantic.decorateWithEntities(notification.metadata["Caption-Abstract"]));
+        } else {
+          promises.push(Promise.resolve([]));
+        }
         decoratedItem = notification.metadata;
         return Promise.all(promises);
       })
       .then(results => {
         let i=0;
         decoratedItem.extendedContent = {};
-        ['keywords','people','faces','text','adultContent'].forEach((key) => {
+        ['keywords','people','faces','text','adultContent','semanticEntities'].forEach((key) => {
           decoratedItem.extendedContent[key] = results[i];
           i++;
         });
