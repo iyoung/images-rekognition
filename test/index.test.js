@@ -1,6 +1,5 @@
 'use strict';
 
-const chai = require('chai');
 const should = require('chai').should();
 const sinon = require('sinon');
 const AWSUtils = require('@press-association/aws-utils');

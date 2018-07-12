@@ -1,11 +1,9 @@
 'use strict';
 
 const AWS = require('aws-sdk');
-const chai = require('chai');
 const should = require('chai').should();
 const sinon = require('sinon');
 
-const NOTIFICATION_INPUT_1 = require(`${__dirname}/../fixtures/pa-1-sns.input.json`);
 let sandbox, semantic;
 
 describe('semantic', () => {
